@@ -16,7 +16,7 @@ export async function GET() {
             distinct: ['kommun'],
         });
 
-        const kommuner = responses.map(r => r.kommun).filter(Boolean);
+        const kommuner = responses.map((r: any) => r.kommun).filter(Boolean);
         return NextResponse.json(kommuner);
     } catch (error) {
         console.error("Failed to fetch kommuner:", error);

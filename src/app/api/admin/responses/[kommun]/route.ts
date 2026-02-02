@@ -30,7 +30,7 @@ export async function GET(
         });
 
         // Map responses to include role and data
-        const formattedResponses = responses.map(r => ({
+        const formattedResponses = responses.map((r: any) => ({
             role: r.occupationalRole,
             answers: JSON.parse(r.data),
             user: r.user.email
