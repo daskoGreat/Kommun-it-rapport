@@ -6,14 +6,15 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: Request,
-    { params }: { params: { kommun: string } }
+    { params }: { params: Promise<{ kommun: string }> }
 ) {
     const session = await auth();
     if (!session || (session.user as any).role !== 'ADMIN') {
         return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const kommun = decodeURIComponent(params.kommun);
+    const { kommun } = await params;
+    const decodedKommun = decodeURIComponent(kommun);
 
     try {
         const responses = await (prisma as any).response.findMany({
