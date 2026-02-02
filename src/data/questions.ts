@@ -137,12 +137,12 @@ export const surveySections: Section[] = [
     },
     {
         id: 'vision',
-        title: 'Kommunens Vision',
+        title: 'Verksamhetens Vision',
         description: 'Beskriv visionen för att se hur väl arbetet stämmer överens.',
         questions: [
             {
                 id: 'vision_text',
-                text: 'Vad är kommunens vision?',
+                text: 'Vad är verksamhetens vision?',
                 type: 'text'
             }
         ]

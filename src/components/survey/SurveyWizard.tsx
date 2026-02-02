@@ -9,14 +9,25 @@ import { useRouter } from 'next/navigation';
 export const SurveyWizard = () => {
     const { responses, setResponse } = useSurvey();
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const currentSection = surveySections[currentSectionIndex];
     const isLastSection = currentSectionIndex === surveySections.length - 1;
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (isLastSection) {
-            router.push('/report');
+            setIsSubmitting(true);
+            try {
+                const { saveSurveyResponse } = await import('@/app/lib/actions');
+                await saveSurveyResponse(responses);
+                router.push('/thanks');
+            } catch (error) {
+                console.error("Error saving response:", error);
+                alert("Kunde inte spara dina svar. Försök igen.");
+            } finally {
+                setIsSubmitting(false);
+            }
         } else {
             window.scrollTo(0, 0);
             setCurrentSectionIndex((prev) => prev + 1);
@@ -33,29 +44,29 @@ export const SurveyWizard = () => {
     const progress = ((currentSectionIndex + 1) / surveySections.length) * 100;
 
     return (
-        <div className="max-w-3xl mx-auto py-12 px-4">
+        <div className="max-w-4xl mx-auto py-8">
             {/* Progress Bar */}
-            <div className="mb-8">
-                <div className="flex justify-between text-sm font-medium text-slate-500 mb-2">
-                    <span>Del {currentSectionIndex + 1} av {surveySections.length}</span>
-                    <span>{Math.round(progress)}% klart</span>
+            <div className="mb-12">
+                <div className="flex justify-between text-xs font-bold text-text-muted mb-4 uppercase tracking-widest">
+                    <span>Steg {currentSectionIndex + 1} av {surveySections.length}</span>
+                    <span>{Math.round(progress)}% slutfört</span>
                 </div>
-                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-surface rounded-full overflow-hidden border border-border">
                     <div
-                        className="h-full bg-blue-600 transition-all duration-500 ease-out"
+                        className="h-full bg-accent transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(186,170,93,0.4)]"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
             </div>
 
             {/* Header */}
-            <div className="mb-10 text-center">
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">{currentSection.title}</h1>
-                <p className="text-lg text-slate-600 dark:text-slate-300">{currentSection.description}</p>
+            <div className="mb-14 text-center">
+                <h2 className="text-4xl font-bold text-foreground mb-4 tracking-tight">{currentSection.title}</h2>
+                <p className="text-xl text-text-muted max-w-2xl mx-auto leading-relaxed font-light">{currentSection.description}</p>
             </div>
 
             {/* Questions */}
-            <div className="space-y-6 mb-10">
+            <div className="space-y-10 mb-16">
                 {currentSection.questions.map((question) => (
                     <QuestionCard
                         key={question.id}
@@ -67,22 +78,23 @@ export const SurveyWizard = () => {
             </div>
 
             {/* Navigation */}
-            <div className="flex justify-between items-center pt-8 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-between items-center pt-10 border-t border-border">
                 <button
                     onClick={handleBack}
                     disabled={currentSectionIndex === 0}
-                    className={`px-6 py-2.5 rounded-lg font-medium transition-colors ${currentSectionIndex === 0
-                            ? 'text-slate-300 cursor-not-allowed'
-                            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                    className={`px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-xs transition-all ${currentSectionIndex === 0
+                        ? 'text-text-muted opacity-30 cursor-not-allowed'
+                        : 'text-foreground hover:bg-surface border border-transparent hover:border-border'
                         }`}
                 >
-                    Tillbaka
+                    ← Föregående
                 </button>
                 <button
                     onClick={handleNext}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+                    disabled={isSubmitting}
+                    className="bg-accent hover:bg-accent-hover text-background px-10 py-4 rounded-xl font-bold uppercase tracking-widest text-xs shadow-[0_10px_20px_rgba(0,0,0,0.3)] hover:shadow-accent/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
                 >
-                    {isLastSection ? 'Skapa Rapport' : 'Nästa steg'}
+                    {isSubmitting ? 'Sparar...' : (isLastSection ? 'Skicka in svar' : 'Nästa Sida →')}
                 </button>
             </div>
         </div>

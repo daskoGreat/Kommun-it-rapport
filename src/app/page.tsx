@@ -4,23 +4,27 @@ import { SurveyWizard } from '@/components/survey/SurveyWizard';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12 pt-8">
-          <h1 className="text-4xl font-extrabold tracking-tight mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Kommun IT-Mognadsanalys
+    <main className="min-h-screen bg-background text-foreground transition-colors duration-500">
+      <div className="container mx-auto px-6 py-12">
+        <header className="text-center mb-20 pt-16">
+          <div className="mb-6 flex justify-center">
+            <span className="text-xs font-bold tracking-[0.4em] text-accent uppercase bg-accent/10 px-4 py-2 rounded-full border border-accent/20">
+              Strategisk Analys v2.0
+            </span>
+          </div>
+          <h1 className="text-7xl font-extrabold tracking-tight mb-8 text-foreground">
+            Indikativ analys för digital mognad
           </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Svara på frågorna för att analysera er digitala mognad och få skräddarsydda rekommendationer för nästa steg.
+          <div className="h-1.5 w-32 bg-accent mx-auto mb-10 rounded-full shadow-[0_0_15px_rgba(186,170,93,0.3)]"></div>
+          <p className="text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+            Ett kvalificerat beslutsunderlag för att bedöma er digitala mognad och identifiera strategiska utvecklingsvägar.
           </p>
         </header>
 
-        <SurveyWizard />
-
-        <footer className="mt-20 text-center text-slate-400 text-sm pb-8">
-          <p>© 2025 IT-Mognadsanalys. Ett verktyg för strategisk digitalisering.</p>
-        </footer>
+        <section className="relative z-10">
+          <SurveyWizard />
+        </section>
       </div>
     </main>
-  );  
+  );
 }
