@@ -2,9 +2,8 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
+import { authConfig } from "./auth.config"
 
 async function getUser(email: string) {
     try {
@@ -19,6 +18,7 @@ async function getUser(email: string) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     providers: [
         Credentials({
             async authorize(credentials) {
@@ -42,48 +42,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
-    callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user
-            const isOnAdmin = nextUrl.pathname.startsWith('/admin')
-            const isOnAuth = nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/register')
-            const isHomePage = nextUrl.pathname === '/'
-
-            if (isOnAdmin) {
-                if (isLoggedIn && (auth.user as any).role === 'ADMIN') return true
-                return false // Redirect to login
-            }
-
-            if (isHomePage) {
-                if (isLoggedIn) return true
-                return false // Redirect to login
-            }
-
-            if (isOnAuth && isLoggedIn) {
-                return Response.redirect(new URL('/', nextUrl))
-            }
-
-            return true
-        },
-        async jwt({ token, user }) {
-            if (user) {
-                token.role = (user as any).role
-                token.kommun = (user as any).kommun
-                token.occupationalRole = (user as any).occupationalRole
-            }
-            return token
-        },
-        async session({ session, token }) {
-            if (session.user) {
-                (session.user as any).id = token.sub;
-                (session.user as any).role = token.role;
-                (session.user as any).kommun = token.kommun;
-                (session.user as any).occupationalRole = token.occupationalRole;
-            }
-            return session
-        },
-    },
-    pages: {
-        signIn: '/login',
-    },
 })
