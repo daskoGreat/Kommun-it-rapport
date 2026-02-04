@@ -1,17 +1,17 @@
 import OpenAI from "openai";
 
 // Server-side only check to prevent credentials leaking to client
-if (process.env.NEXT_PUBLIC_GITHUB_TOKEN) {
-    console.warn("WARNING: GITHUB_TOKEN is visible to the client. Please use GITHUB_TOKEN (without NEXT_PUBLIC_) for server-side secrets.");
+if (process.env.NEXT_PUBLIC_GITHUB_MODELS_TOKEN) {
+    console.warn("WARNING: GITHUB_MODELS_TOKEN is visible to the client. Please use GITHUB_MODELS_TOKEN (without NEXT_PUBLIC_) for server-side secrets.");
 }
 
-const token = process.env.GITHUB_TOKEN;
+const token = process.env.GITHUB_MODELS_TOKEN;
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o";
 
 export async function generateItReportStream(prompt: string) {
     if (!token) {
-        throw new Error("GITHUB_TOKEN is not set in environment variables");
+        throw new Error("GITHUB_MODELS_TOKEN is not set in environment variables");
     }
 
     const client = new OpenAI({ baseURL: endpoint, apiKey: token });
