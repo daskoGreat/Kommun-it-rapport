@@ -35,6 +35,7 @@ export const maxDuration = 60; // Allow up to 60 seconds for LLM generation
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+    console.log('Initiating AI analysis stream...');
     try {
         const body = await req.json();
         const { responses, aggregatedResponses, kommunName } = body;
