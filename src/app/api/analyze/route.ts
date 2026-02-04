@@ -31,6 +31,9 @@ function formatAnswer(answer: any, question: any) {
 
 import { generateItReport } from '@/lib/llm';
 
+export const maxDuration = 60; // Allow up to 60 seconds for LLM generation
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
@@ -101,7 +104,7 @@ Skriv på svenska.`;
     } catch (error) {
         console.error('Error in analyze route:', error);
         return NextResponse.json(
-            { error: 'Failed to generate analysis' },
+            { error: 'Failed to generate analysis', details: (error as Error).message },
             { status: 500 }
         );
     }
