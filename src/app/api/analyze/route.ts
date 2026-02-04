@@ -8,14 +8,28 @@ function findQuestion(id: string) {
 }
 
 function formatAnswer(answer: any, question: any) {
-    if (question.type === 'yes-no') {
-        return answer ? 'JA' : 'NEJ';
+    if (!answer) return 'Inget svar';
+
+    if (question.type === 'multiple-choice') {
+        const option = question.options?.find((opt: any) => opt.value === answer);
+        return option ? option.label : answer;
     }
-    if (question.type === 'checkbox' && Array.isArray(answer)) {
-        return answer.join(', ');
+
+    if (question.type === 'likert') {
+        if (typeof answer === 'object') {
+            return Object.entries(answer).map(([rowId, colValue]) => {
+                const row = question.rows?.find((r: any) => r.id === rowId);
+                const col = question.columns?.find((c: any) => c.value == colValue); // loose eq
+                return `${row?.text || rowId}: ${col?.label || colValue}`;
+            }).join('\n   ');
+        }
     }
-    return answer || 'Inget svar';
+
+    // Fallback for text
+    return answer;
 }
+
+import { generateItReport } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {
     try {
@@ -62,8 +76,9 @@ Rapporten SKA bestå av exakt dessa tre delar:
 
 2. **NULÄGESBESKRIVNING**: En sammanhängande text i löpande stil (professionell prosa) som beskriver nuläget. Texten ska vara saklig, ha en professionell ton och ge en helhetsbild av styrkor, utmaningar och förutsättningar. Lyft fram olika rollperspektiv om relevant.
 
-3. **EVENTUELLA MOTSÄGELSER**: Identifiera logiska inkonsekvenser eller motsägelsefulla svar, både inom en enskild roll och mellan olika roller.
-   - Om inkonsekvenser finns, lista dem under rubriken med formateringen: 🔴 [Beskrivning av motsägelsen]
+3. **EVENTUELLA MOTSÄGELSER OCH OSÄKERHET**: Identifiera logiska inkonsekvenser eller motsägelsefulla svar. 
+   - Notera även om det förekommer många svar med "Vet ej". Tolka detta som osäkerhet, otydlig kommunikation eller bristande kunskap inom organisationen.
+   - Om inkonsekvenser eller hög osäkerhet finns, lista dem under rubriken med formateringen: 🔴 [Beskrivning av motsägelsen/osäkerheten]
    - Om INGA motsägelser hittas, ska du svara med exakt texten: "INGA_MOTSÄGELSER_HITTADE"
 
 FORMAT:
@@ -79,22 +94,10 @@ Använd dessa rubriker exakt:
 
 Skriv på svenska.`;
 
-        const response = await fetch('http://localhost:11434/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'gemma3:4b',
-                prompt,
-                stream: false,
-            }),
-        });
+        // Use the new server-side LLM service
+        const analysis = await generateItReport(prompt);
+        return NextResponse.json({ analysis });
 
-        if (!response.ok) {
-            throw new Error('Ollama API error');
-        }
-
-        const data = await response.json();
-        return NextResponse.json({ analysis: data.response });
     } catch (error) {
         console.error('Error in analyze route:', error);
         return NextResponse.json(

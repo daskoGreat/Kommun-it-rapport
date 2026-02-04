@@ -1,5 +1,5 @@
 import React from 'react';
-import { Question, Option } from '@/types/survey';
+import { Question, Option, LikertRow, LikertColumn } from '@/types/survey';
 
 interface QuestionCardProps {
     question: Question;
@@ -8,97 +8,147 @@ interface QuestionCardProps {
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, onChange }) => {
-    if (question.type === 'yes-no') {
+    // ----------------------------------------------------------------------
+    // TEXT Input
+    // ----------------------------------------------------------------------
+    if (question.type === 'text') {
+        const val = (value as string) || '';
         return (
-            <div className="bg-surface p-10 rounded-2xl border border-border shadow-2xl transition-all duration-300">
-                <h3 className="text-2xl font-bold text-foreground mb-4 leading-snug tracking-tight">{question.text}</h3>
-                {question.description && <p className="text-text-muted text-lg mb-8 font-light leading-relaxed">{question.description}</p>}
-                <div className="flex gap-6 mt-6">
-                    <button
-                        onClick={() => onChange(true)}
-                        className={`flex-1 py-5 px-8 rounded-xl border-2 font-bold uppercase tracking-widest text-xs transition-all transform ${value === true
-                            ? 'bg-accent border-accent text-background shadow-[0_5px_15px_rgba(186,170,93,0.3)] scale-[1.02]'
-                            : 'bg-transparent border-border text-foreground hover:border-accent/40 hover:bg-surface-hover'
-                            }`}
-                    >
-                        Ja
-                    </button>
-                    <button
-                        onClick={() => onChange(false)}
-                        className={`flex-1 py-5 px-8 rounded-xl border-2 font-bold uppercase tracking-widest text-xs transition-all transform ${value === false
-                            ? 'bg-accent border-accent text-background shadow-[0_5px_15px_rgba(186,170,93,0.3)] scale-[1.02]'
-                            : 'bg-transparent border-border text-foreground hover:border-accent/40 hover:bg-surface-hover'
-                            }`}
-                    >
-                        Nej
-                    </button>
+            <div className="bg-surface p-8 rounded-2xl shadow-2xl border border-border hover:border-accent/30 transition-all duration-300">
+                <h3 className="text-xl font-bold text-foreground mb-2">{question.text}</h3>
+                {question.description && <p className="text-text-muted mb-6 font-light">{question.description}</p>}
+
+                <div className="relative">
+                    <input
+                        type="text"
+                        className="w-full h-14 px-5 rounded-xl bg-background/50 border border-border focus:border-accent focus:ring-1 focus:ring-accent/50 outline-none transition-all text-foreground placeholder-text-muted/30 font-medium"
+                        placeholder="Skriv din roll här..."
+                        value={val}
+                        onChange={(e) => onChange(e.target.value)}
+                    />
                 </div>
             </div>
         );
     }
 
-    if (question.type === 'checkbox' && question.options) {
-        const currentValues = (value as string[]) || [];
+    // ----------------------------------------------------------------------
+    // MULTIPLE CHOICE (Radio)
+    // ----------------------------------------------------------------------
+    if (question.type === 'multiple-choice' && question.options) {
+        const currentVal = value as string;
 
-        const toggleOption = (val: string) => {
-            if (currentValues.includes(val)) {
-                onChange(currentValues.filter((v) => v !== val));
-            } else {
-                onChange([...currentValues, val]);
-            }
+        return (
+            <div className="bg-surface p-8 rounded-2xl shadow-2xl border border-border hover:border-accent/30 transition-all duration-300 relative">
+                <h3 className="text-xl font-bold text-foreground mb-6">{question.text}</h3>
+
+                <div className="space-y-3">
+                    {question.options.map((opt: Option) => {
+                        const isSelected = currentVal === opt.value;
+                        const inputId = `${question.id}_${opt.value}`;
+                        return (
+                            <label
+                                key={opt.value}
+                                htmlFor={inputId}
+                                className={`flex items-center p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${isSelected
+                                    ? 'bg-[#1c2e2e] border-accent shadow-[inset_0_0_15px_rgba(186,170,93,0.1)]' // Safe dark background
+                                    : 'bg-background/30 border-border hover:bg-surface-hover hover:border-accent/40'
+                                    }`}
+                            >
+                                <div className={`relative flex items-center justify-center w-5 h-5 rounded-full border-2 mr-4 transition-colors ${isSelected ? 'border-accent' : 'border-text-muted group-hover:border-accent/60'
+                                    }`}>
+                                    {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent)]" />}
+                                    <input
+                                        id={inputId}
+                                        type="radio"
+                                        name={question.id}
+                                        value={opt.value}
+                                        checked={isSelected}
+                                        onChange={() => onChange(opt.value)}
+                                        className="sr-only"
+                                    />
+                                </div>
+                                <span className={`text-base font-medium transition-colors ${isSelected ? 'text-foreground' : 'text-text-muted group-hover:text-foreground'}`}>
+                                    {opt.label}
+                                </span>
+                            </label>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    // ----------------------------------------------------------------------
+    // LIKERT MATRIX
+    // ----------------------------------------------------------------------
+    if (question.type === 'likert' && question.rows && question.columns) {
+        const currentValues = (value as Record<string, string>) || {};
+
+        const handleRowChange = (rowId: string, colValue: string | number) => {
+            onChange({
+                ...currentValues,
+                [rowId]: colValue
+            });
         };
 
         return (
-            <div className="bg-surface p-10 rounded-2xl border border-border shadow-2xl transition-all duration-300">
-                <h3 className="text-2xl font-bold text-foreground mb-8 leading-snug tracking-tight">{question.text}</h3>
-                <div className="space-y-4">
-                    {question.options.map((opt: Option) => (
-                        <label
-                            key={opt.id}
-                            className={`flex items-start p-5 rounded-xl border-2 cursor-pointer transition-all ${currentValues.includes(opt.value.toString())
-                                ? 'bg-accent/5 border-accent shadow-[inset_0_0_10px_rgba(186,170,93,0.1)]'
-                                : 'border-border hover:border-accent/40 bg-background/30 hover:bg-surface-hover'
-                                }`}
-                        >
-                            <div className="relative flex items-center mt-1">
-                                <input
-                                    type="checkbox"
-                                    className="peer h-6 w-6 opacity-0 absolute cursor-pointer"
-                                    checked={currentValues.includes(opt.value.toString())}
-                                    onChange={() => toggleOption(opt.value.toString())}
-                                />
-                                <div className={`h-6 w-6 border-2 rounded transition-all ${currentValues.includes(opt.value.toString())
-                                    ? 'bg-accent border-accent text-background'
-                                    : 'bg-transparent border-border peer-hover:border-accent/40'}`}>
-                                    {currentValues.includes(opt.value.toString()) && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mx-auto mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                    )}
-                                </div>
-                            </div>
-                            <span className={`ml-4 text-lg font-medium transition-colors ${currentValues.includes(opt.value.toString()) ? 'text-foreground' : 'text-text-muted'}`}>
-                                {opt.label}
-                            </span>
-                        </label>
-                    ))}
-                </div>
-            </div>
-        );
-    }
+            <div className="bg-surface p-8 rounded-2xl shadow-2xl border border-border overflow-hidden relative">
+                <h3 className="text-xl font-bold text-foreground mb-2">{question.text}</h3>
+                {question.description && <p className="text-text-muted mb-8 font-light">{question.description}</p>}
 
-    if (question.type === 'text') {
-        return (
-            <div className="bg-surface p-10 rounded-2xl border border-border shadow-2xl transition-all duration-300">
-                <label className="block text-2xl font-bold text-foreground mb-6 leading-snug tracking-tight">
-                    {question.text}
-                </label>
-                <textarea
-                    className="w-full p-6 rounded-xl bg-background/50 border-2 border-border focus:border-accent focus:ring-4 focus:ring-accent/10 outline-none transition-all placeholder:text-text-muted/50 text-foreground text-lg min-h-[220px] font-light italic leading-relaxed"
-                    placeholder="Formulera er strategiska vision här..."
-                    value={(value as string) || ''}
-                    onChange={(e) => onChange(e.target.value)}
-                />
+                {/* Desktop Table View */}
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[700px] text-left border-collapse">
+                        <thead>
+                            <tr>
+                                <th className="p-4 w-2/5"></th>
+                                {question.columns.map((col) => (
+                                    <th key={col.value} className="p-4 text-center text-xs font-bold text-text-muted uppercase tracking-widest">
+                                        {col.label}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {question.rows.map((row, idx) => (
+                                <tr key={row.id} className={`transition-colors border-b border-border/50 hover:bg-white/5 ${idx % 2 === 0 ? 'bg-background/30' : 'bg-transparent'}`}>
+                                    <td className="p-4 text-foreground/90 font-medium text-sm leading-relaxed">
+                                        {row.text}
+                                    </td>
+                                    {question.columns?.map((col) => {
+                                        const isSelected = currentValues[row.id] == col.value; // Loose equality
+                                        const inputId = `${question.id}_${row.id}_${col.value}`;
+                                        return (
+                                            <td key={col.value} className="p-4 text-center">
+                                                <div className="flex justify-center">
+                                                    <label
+                                                        htmlFor={inputId}
+                                                        className={`cursor-pointer p-3 rounded-full transition-colors group ${isSelected ? 'bg-[#2A2A2A]' : 'hover:bg-white/5'}`}
+                                                    >
+                                                        <input
+                                                            id={inputId}
+                                                            type="radio"
+                                                            name={`${question.id}_${row.id}`}
+                                                            value={col.value}
+                                                            checked={isSelected}
+                                                            onChange={() => handleRowChange(row.id, col.value)}
+                                                            className="sr-only"
+                                                        />
+                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${isSelected
+                                                            ? 'border-accent bg-accent shadow-[0_0_10px_rgba(186,170,93,0.4)]'
+                                                            : 'border-text-muted group-hover:border-accent/60'
+                                                            }`}>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }

@@ -1,18 +1,29 @@
 export type QuestionId = string;
-export type SectionId = 'digitalmognad' | 'digitaltarv' | 'digitalformaga' | 'vision';
+export type SectionId = 'intro' | 'digitalt_arv' | 'digital_formaga';
 
 export interface Option {
-    id: string;
     label: string;
-    value: string | number | boolean;
+    value: string | number;
+}
+
+export interface LikertRow {
+    id: string;
+    text: string;
+}
+
+export interface LikertColumn {
+    value: string | number;
+    label: string;
 }
 
 export interface Question {
     id: QuestionId;
     text: string;
     description?: string;
-    type: 'yes-no' | 'checkbox' | 'text';
-    options?: Option[]; // For checkbox/radio
+    type: 'text' | 'yes-no' | 'multiple-choice' | 'likert';
+    options?: Option[]; // For multiple-choice
+    rows?: LikertRow[]; // For likert
+    columns?: LikertColumn[]; // For likert
 }
 
 export interface Section {
@@ -23,7 +34,10 @@ export interface Section {
 }
 
 export interface SurveyResponse {
-    [questionId: string]: string | boolean | string[]; // boolean for yes-no, string[] for checkboxes, string for text
+    [questionId: string]: string | boolean | string[] | Record<string, string>;
+    // boolean: yes-no
+    // string: text, multiple-choice
+    // Record<string, string>: likert (rowId -> value)
 }
 
 export interface ReportRecommendation {

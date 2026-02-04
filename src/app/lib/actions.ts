@@ -133,3 +133,8 @@ export async function saveSurveyResponse(data: any) {
         throw new Error("Failed to save response.");
     }
 }
+
+export async function logoutAction() {
+    const { signOut } = await import('@/auth');
+    await signOut({ redirectTo: '/login' });
+}

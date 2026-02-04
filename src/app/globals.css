@@ -1,21 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  /* Great IT Brand Colors - Dark Professional Palette */
-  --color-bg-deep: #0D1117;
-  /* Deep Navy/Black */
-  --color-surface: #161B22;
-  /* Dark Charcoal for cards */
-  --color-surface-hover: #1F2937;
+  /* Great IT Brand Colors - Dark Blue & Gold Palette */
+  --color-bg-deep: #1B445A;
+  /* Deep Navy */
+  --color-surface: #31607A;
+  /* Lighter Blue */
+  --color-surface-hover: #264a5e;
+  /* Intermediate Blue for hover */
   --color-accent: #BAAA5D;
-  /* Great IT Gold */
-  --color-accent-hover: #D4C475;
+  /* Gold */
+  --color-accent-hover: #887b3a;
+  /* Darker Gold */
 
-  --color-text-bright: #F0F6FC;
-  /* Primary Text */
-  --color-text-muted: #8B949E;
-  /* Secondary Text */
-  --color-border: #30363D;
+  --color-text-bright: #F2F5F8;
+  /* Light/White */
+  --color-text-muted: #F4F1E5;
+  /* Beige/Off-white */
+  --color-border: #4A7A96;
+  /* Lighter Blue Border */
 
   /* Theme mappings */
   --background: var(--color-bg-deep);
@@ -32,8 +35,8 @@
   --color-border: var(--color-border);
   --color-text-muted: var(--color-text-muted);
 
-  --font-sans: 'Raleway', var(--font-geist-sans), sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Raleway', sans-serif;
+  --font-mono: monospace;
 }
 
 /* Default to dark, even if OS is light - for professional consistency */
@@ -52,6 +55,52 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* 
+   CRITICAL FIX: This element (likely from a dev tool or extension) 
+   was covering the entire screen with a transparent overlay, blocking all clicks.
+   Hiding it restores application interactivity.
+*/
+/* 
+   NUCLEAR INTERACTION FIX
+   Force-hide dev tool overlays and ensure interactive elements 
+   are always clickable regardless of container state.
+*/
+#preact-border-shadow-host,
+#vercel-toolbar,
+div[class*="vercel"],
+next-route-announcer {
+  display: none !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  z-index: -9999 !important;
+}
+
+/* Force interactivity on all inputs/buttons */
+input,
+button,
+label,
+select,
+textarea,
+a {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Ensure text inputs have text cursor */
+input[type="text"],
+textarea {
+  cursor: text !important;
+}
+
+/* Reset body state */
+body {
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
 }
 
 @media print {

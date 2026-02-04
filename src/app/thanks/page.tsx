@@ -17,7 +17,7 @@ export default function ThanksPage() {
                     <h1 className="text-5xl font-extrabold tracking-tight">Tack för ditt svar</h1>
                     <div className="h-1 w-24 bg-accent mx-auto rounded-full"></div>
                     <p className="text-2xl text-text-muted font-light leading-relaxed">
-                        Din analys har registrerats och kommer att användas som underlag för er verksamhets IT-strategi.
+                        Dina svar har registrerats och kommer att sammanställas i en analys. Vi kommer att skicka analysen – som ger en fingervisning om din organisations mognad – till den e-postadress du angivit. I samband med detta kommer vi också ge er möjlighet att boka in ett möte där vi sätter analysen i ett sammanhang och tittar djupare på vägen framåt för just er.
                     </p>
                 </div>
 

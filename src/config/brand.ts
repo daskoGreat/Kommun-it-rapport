@@ -2,10 +2,10 @@ export const brandConfig = {
     name: "Indikativ analys för digital mognad",
     poweredBy: "Powered by Great IT",
     colors: {
-        primary: "#0D232E",
+        primary: "#1B445A",
         accent: "#BAAA5D",
-        surface: "#FFFFFF",
-        textPrimary: "#0D232E",
+        surface: "#31607A",
+        textPrimary: "#F2F5F8",
     },
     fonts: {
         sans: "Raleway, sans-serif",

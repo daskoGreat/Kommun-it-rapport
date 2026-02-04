@@ -5,7 +5,7 @@ import { SurveyResponse } from '@/types/survey';
 
 interface SurveyContextType {
     responses: SurveyResponse;
-    setResponse: (questionId: string, value: string | boolean | string[]) => void;
+    setResponse: (questionId: string, value: string | boolean | string[] | Record<string, string> | any) => void;
     resetSurvey: () => void;
 }
 
