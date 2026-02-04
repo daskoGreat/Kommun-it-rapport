@@ -9,7 +9,7 @@ const token = process.env.GITHUB_TOKEN;
 const endpoint = "https://models.inference.ai.azure.com";
 const modelName = "gpt-4o";
 
-export async function generateItReport(prompt: string) {
+export async function generateItReportStream(prompt: string) {
     if (!token) {
         throw new Error("GITHUB_TOKEN is not set in environment variables");
     }
@@ -17,28 +17,22 @@ export async function generateItReport(prompt: string) {
     const client = new OpenAI({ baseURL: endpoint, apiKey: token });
 
     try {
-        const response = await client.chat.completions.create({
+        const stream = await client.chat.completions.create({
             messages: [
                 { role: "system", content: "You are a helpful IT strategy assistant." },
                 { role: "user", content: prompt }
             ],
             model: modelName,
-            temperature: 0.7, // Balance between creativity and consistency
-            max_tokens: 4096, // Allow long reports
+            temperature: 0.7,
+            max_tokens: 4096,
             top_p: 1.0,
+            stream: true, // Enable streaming
         });
 
-        const content = response.choices[0].message.content;
-
-        if (!content) {
-            throw new Error("Received empty response from LLM");
-        }
-
-        return content;
+        return stream;
 
     } catch (error) {
         console.error("LLM Generation Error:", error);
-        // Re-throw with a clean message or handle specifically
         if (error instanceof OpenAI.APIError) {
             throw new Error(`GitHub Models API Error: ${error.message} (Status: ${error.status})`);
         }

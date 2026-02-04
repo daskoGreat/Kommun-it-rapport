@@ -37,10 +37,23 @@ export default function AdminReportPage() {
                 });
 
                 if (analyzeRes.ok) {
-                    const data = await analyzeRes.json();
-                    setAiAnalysis(data.analysis);
+                    const reader = analyzeRes.body?.getReader();
+                    const decoder = new TextDecoder();
+                    let result = '';
+
+                    if (reader) {
+                        setAiAnalysis(""); // Clear previous state
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            const text = decoder.decode(value, { stream: true });
+                            result += text;
+                            setAiAnalysis(result);
+                        }
+                    }
                 } else {
-                    throw new Error("Misslyckades att generera AI-analys.");
+                    const errorData = await analyzeRes.json().catch(() => ({}));
+                    throw new Error(`Misslyckades att generera AI-analys: ${errorData.details || analyzeRes.statusText}`);
                 }
             } catch (err: any) {
                 console.error(err);

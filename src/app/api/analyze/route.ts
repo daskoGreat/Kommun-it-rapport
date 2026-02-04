@@ -29,7 +29,7 @@ function formatAnswer(answer: any, question: any) {
     return answer;
 }
 
-import { generateItReport } from '@/lib/llm';
+import { generateItReportStream } from '@/lib/llm';
 
 export const maxDuration = 60; // Allow up to 60 seconds for LLM generation
 export const dynamic = 'force-dynamic';
@@ -97,9 +97,34 @@ Använd dessa rubriker exakt:
 
 Skriv på svenska.`;
 
-        // Use the new server-side LLM service
-        const analysis = await generateItReport(prompt);
-        return NextResponse.json({ analysis });
+        // Use the new server-side streaming service
+        const stream = await generateItReportStream(prompt);
+
+        // Convert the OpenAI Stream to a Web ReadableStream
+        const readableStream = new ReadableStream({
+            async start(controller) {
+                try {
+                    for await (const chunk of stream) {
+                        const content = chunk.choices[0]?.delta?.content || '';
+                        if (content) {
+                            controller.enqueue(new TextEncoder().encode(content));
+                        }
+                    }
+                    controller.close();
+                } catch (err) {
+                    console.error('Streaming Error:', err);
+                    controller.error(err);
+                }
+            },
+        });
+
+        // Return the stream with correct headers for text streaming
+        return new NextResponse(readableStream, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Transfer-Encoding': 'chunked',
+            },
+        });
 
     } catch (error) {
         console.error('Error in analyze route:', error);

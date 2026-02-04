@@ -32,10 +32,23 @@ export default function ReportPage() {
                 });
 
                 if (res.ok) {
-                    const data = await res.json();
-                    setAiAnalysis(data.analysis);
+                    const reader = res.body?.getReader();
+                    const decoder = new TextDecoder();
+                    let result = '';
+
+                    if (reader) {
+                        setAiAnalysis(""); // Clear previous state
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            const text = decoder.decode(value, { stream: true });
+                            result += text;
+                            setAiAnalysis(result);
+                        }
+                    }
                 } else {
-                    console.error("Failed to fetch AI analysis");
+                    const errorData = await res.json().catch(() => ({}));
+                    console.error("Failed to fetch AI analysis", errorData);
                     setAiAnalysis("Kunde inte generera AI-analys. Kontrollera att Ollama är igång.");
                 }
             } catch (error) {
