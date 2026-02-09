@@ -12,12 +12,27 @@ export async function GET() {
 
     try {
         const responses = await (prisma as any).response.findMany({
-            select: { kommun: true },
-            distinct: ['kommun'],
+            select: {
+                kommun: true,
+                userId: true,
+            },
         });
 
-        const kommuner = responses.map((r: any) => r.kommun).filter(Boolean);
-        return NextResponse.json(kommuner);
+        const countsByKommun: Record<string, Set<string>> = {};
+        responses.forEach((r: any) => {
+            if (!r.kommun) return;
+            if (!countsByKommun[r.kommun]) {
+                countsByKommun[r.kommun] = new Set();
+            }
+            countsByKommun[r.kommun].add(r.userId);
+        });
+
+        const result = Object.entries(countsByKommun).map(([name, userSet]) => ({
+            name,
+            userCount: userSet.size,
+        })).sort((a, b) => a.name.localeCompare(b.name));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error("Failed to fetch kommuner:", error);
         return new NextResponse("Internal Server Error", { status: 500 });

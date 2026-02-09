@@ -8,6 +8,9 @@ interface QuestionCardProps {
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, value, onChange }) => {
+    if (question.id === 'role') {
+        console.log("[QuestionCard] Role value received:", value);
+    }
     // ----------------------------------------------------------------------
     // TEXT Input
     // ----------------------------------------------------------------------

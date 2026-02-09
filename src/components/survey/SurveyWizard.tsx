@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSurvey } from '@/context/SurveyContext';
 import { surveySections } from '@/data/questions';
 import { QuestionCard } from './QuestionCard';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 
 export const SurveyWizard = () => {
+    const { data: session, status } = useSession();
     const { responses, setResponse } = useSurvey();
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);

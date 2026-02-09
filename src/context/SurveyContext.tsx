@@ -1,7 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { SurveyResponse } from '@/types/survey';
+import { useSession } from 'next-auth/react';
+import { getInitialRole } from '@/app/lib/actions';
 
 interface SurveyContextType {
     responses: SurveyResponse;
@@ -12,7 +14,43 @@ interface SurveyContextType {
 const SurveyContext = createContext<SurveyContextType | undefined>(undefined);
 
 export const SurveyProvider = ({ children }: { children: ReactNode }) => {
+    const { data: session, status } = useSession();
     const [responses, setResponses] = useState<SurveyResponse>({});
+    const [hasAttemptedPreFill, setHasAttemptedPreFill] = useState(false);
+
+    // Pre-fill role when session is available
+    useEffect(() => {
+        if (status === 'loading' || hasAttemptedPreFill || responses.role) return;
+
+        const initRole = async () => {
+            setHasAttemptedPreFill(true);
+
+            // Try session data first
+            const sessionRole = (session?.user as any)?.occupationalRole;
+
+            if (sessionRole && sessionRole !== 'Okänd') {
+                setResponses(prev => ({ ...prev, role: sessionRole }));
+                return;
+            }
+
+            // Fallback to database check
+            if (session?.user?.email) {
+                try {
+                    const dbRole = await getInitialRole();
+
+                    if (dbRole && dbRole !== 'Okänd') {
+                        setResponses(prev => ({ ...prev, role: dbRole }));
+                    }
+                } catch (error) {
+                    console.error("[SurveyProvider] Error during DB pre-fill:", error);
+                }
+            }
+        };
+
+        if (status === 'authenticated') {
+            initRole();
+        }
+    }, [session, status, hasAttemptedPreFill, responses.role]);
 
     const setResponse = (questionId: string, value: string | boolean | string[]) => {
         setResponses((prev) => ({

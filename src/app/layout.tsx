@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Powered by Great IT",
 };
 
+import NextAuthProvider from "@/components/providers/NextAuthProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <body className={`${raleway.variable} antialiased bg-background text-foreground flex flex-col min-h-screen`}>
-        <SurveyProvider>
-          {children}
-        </SurveyProvider>
+        <NextAuthProvider>
+          <SurveyProvider>
+            {children}
+          </SurveyProvider>
+        </NextAuthProvider>
 
         <footer className="mt-auto py-12 text-center text-xs tracking-[0.2em] font-bold text-text-muted/60 uppercase print:hidden">
           <p className="mb-2 text-accent">Powered by Great IT</p>

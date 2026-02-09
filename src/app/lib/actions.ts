@@ -138,3 +138,44 @@ export async function logoutAction() {
     const { signOut } = await import('@/auth');
     await signOut({ redirectTo: '/login' });
 }
+
+export async function getInitialRole() {
+    const session = await auth();
+    if (!session?.user?.email) return null;
+
+    const email = session.user.email;
+    console.log(`[getInitialRole] Checking role for ${email}`);
+
+    try {
+        // 1. Check user profile first
+        const user = await (prisma as any).user.findUnique({
+            where: { email },
+            select: { occupationalRole: true, id: true }
+        });
+
+        console.log(`[getInitialRole] Profile role: ${user?.occupationalRole}`);
+        if (user?.occupationalRole && user.occupationalRole !== 'Okänd') return user.occupationalRole;
+
+        // 2. Fallback to latest response associated with this user's email
+        // We can use the relation to User to find responses by email
+        const lastResponse = await (prisma as any).response.findFirst({
+            where: {
+                user: { email: email }
+            },
+            orderBy: { createdAt: 'desc' },
+            select: { occupationalRole: true }
+        });
+
+        console.log(`[getInitialRole] Latest response role: ${lastResponse?.occupationalRole}`);
+
+        // Avoid returning 'Okänd' as a pre-fill value if possible
+        if (lastResponse?.occupationalRole && lastResponse.occupationalRole !== 'Okänd') {
+            return lastResponse.occupationalRole;
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Failed to fetch initial role:", error);
+        return null;
+    }
+}
